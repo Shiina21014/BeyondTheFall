@@ -18,6 +18,7 @@ public class BeyondTheFall : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
+			"SlateCore",
 			"Slate"
 		});
 
