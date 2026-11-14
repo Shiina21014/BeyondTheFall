@@ -10,87 +10,139 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UInputMappingContext;
+class UEnhancedInputLocalPlayerSubsystem;
+class USoundWave;
 struct FInputActionValue;
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
- */
 UCLASS(abstract)
 class ABeyondTheFallCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
+		meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
+		meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-protected:
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+protected:
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* JumpAction;
 
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
 
-	/** Mouse Look Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MouseLookAction;
 
 public:
+	ABeyondTheFallCharacter();
 
-	/** Constructor */
-	ABeyondTheFallCharacter();	
+	virtual void GetLifetimeReplicatedProps(
+		TArray<FLifetimeProperty>& OutLifetimeProps
+	) const override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
+	float CurrentStamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+	float MaxStamina = 100.0f;
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
+	bool bStaminaExhausted = false;
+
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetSprintRequested(bool bRequested);
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void OnJumped_Implementation() override;
 
-	/** Initialize input action bindings */
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY()
+	TObjectPtr<USoundWave> JumpSound;
+	
+	UPROPERTY()
+	TObjectPtr<USoundWave> FootstepSound;
 
-protected:
+	float FootstepElapsed = 0.0f;
 
-	/** Called for movement input */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void SetupPlayerInputComponent(
+		UInputComponent* PlayerInputComponent
+	) override;
+
 	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-public:
+	void StartSprint();
+	void StopSprint();
 
-	/** Handles move inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
+
+private:
+	UFUNCTION()
+	void OnRep_IsSprinting();
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsSprinting)
+	bool bIsSprinting = false;
+
+	bool bSprintRequested = false;
+	
+	UPROPERTY()
+	TObjectPtr<UInputAction> SprintAction;
+
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> SprintMappingContext;
+
+	UPROPERTY()
+	TObjectPtr<UEnhancedInputLocalPlayerSubsystem> SprintInputSubsystem;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+	float SprintDrainPerSecond = 15.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+	float StaminaRegenPerSecond = 15.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+	float WalkSpeed = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stamina")
+	float SprintSpeed = 850.0f;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMove(float Right, float Forward);
 
-	/** Handles look inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpStart();
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpEnd();
 
-public:
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const
+	{
+		return CameraBoom;
+	}
 
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const
+	{
+		return FollowCamera;
+	}
 };
+
 

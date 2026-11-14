@@ -8,10 +8,28 @@
 #include "Blueprint/UserWidget.h"
 #include "BeyondTheFall.h"
 #include "Widgets/Input/SVirtualJoystick.h"
+#include "UI/BeyondTFRaceHUD.h"
 
 void ABeyondTheFallPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if (IsLocalPlayerController())
+	{
+		UBeyondTFRaceHUD* RaceHUD = CreateWidget<UBeyondTFRaceHUD>(
+			this,
+			UBeyondTFRaceHUD::StaticClass()
+		);
+
+		if (RaceHUD)
+		{
+			RaceHUD->AddToPlayerScreen();
+			if (HasAuthority())
+			{
+				bShowMouseCursor = true;
+				SetInputMode(FInputModeGameAndUI());
+			}
+		}
+	}
 
 	// only spawn touch controls on local player controllers
 	if (ShouldUseTouchControls() && IsLocalPlayerController())

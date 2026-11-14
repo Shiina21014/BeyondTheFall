@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class BeyondTheFall : ModuleRules
@@ -8,7 +9,8 @@ public class BeyondTheFall : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] {
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
 			"Core",
 			"CoreUObject",
 			"Engine",
@@ -18,13 +20,14 @@ public class BeyondTheFall : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"SlateCore",
-			"Slate"
+			"Slate",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
-		PublicIncludePaths.AddRange(new string[] {
+		PublicIncludePaths.AddRange(new string[]
+		{
 			"BeyondTheFall",
 			"BeyondTheFall/Variant_Platforming",
 			"BeyondTheFall/Variant_Platforming/Animation",
@@ -38,15 +41,8 @@ public class BeyondTheFall : ModuleRules
 			"BeyondTheFall/Variant_SideScrolling/AI",
 			"BeyondTheFall/Variant_SideScrolling/Gameplay",
 			"BeyondTheFall/Variant_SideScrolling/Interfaces",
-			"BeyondTheFall/Variant_SideScrolling/UI"
+			"BeyondTheFall/Variant_SideScrolling/UI",
+			Path.Combine(ModuleDirectory, "Public", "Gameplay", "Race")
 		});
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }
